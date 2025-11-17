@@ -1,9 +1,9 @@
-package onnxruntime
+package cstrings
 
 import "unsafe"
 
-// cStringToString converts a C-style null-terminated string to a Go string.
-func cStringToString(ptr *byte) string {
+// CStringToString converts a C-style null-terminated string to a Go string.
+func CStringToString(ptr *byte) string {
 	if ptr == nil {
 		return ""
 	}

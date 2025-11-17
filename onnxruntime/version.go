@@ -5,6 +5,7 @@ import (
 	"unsafe"
 
 	"github.com/ebitengine/purego"
+	"github.com/shota3506/onnxruntime-purego/internal/cstrings"
 )
 
 // apiBase is the common structure across all API versions.
@@ -40,6 +41,6 @@ func getVersionString(libraryHandle uintptr) (string, error) {
 	// 1. The pointer is returned from GetVersionString (C function)
 	// 2. It points to a static string in the ONNX Runtime library
 	// 3. This string remains valid for the lifetime of the loaded library
-	//nolint:govet // Safe FFI pattern: pointer to static C string
-	return cStringToString((*byte)(unsafe.Pointer(versionPtr))), nil
+	// Safe FFI pattern: pointer to static C string
+	return cstrings.CStringToString((*byte)(unsafe.Pointer(versionPtr))), nil
 }

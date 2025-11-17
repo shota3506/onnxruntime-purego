@@ -6,6 +6,7 @@ import (
 	"unsafe"
 
 	"github.com/ebitengine/purego"
+	"github.com/shota3506/onnxruntime-purego/internal/cstrings"
 	"github.com/shota3506/onnxruntime-purego/onnxruntime/internal/api"
 	v23 "github.com/shota3506/onnxruntime-purego/onnxruntime/internal/api/v23"
 )
@@ -186,7 +187,7 @@ func (r *Runtime) statusError(status api.OrtStatus) error {
 	// 2. It points to a string managed by the status object
 	// 3. We copy the string before releasing the status
 	//nolint:govet // Safe FFI pattern: reading C string
-	message := cStringToString((*byte)(unsafe.Pointer(messagePtr)))
+	message := cstrings.CStringToString((*byte)(unsafe.Pointer(messagePtr)))
 
 	r.apiFuncs.ReleaseStatus(status)
 
@@ -211,7 +212,7 @@ func (r *Runtime) GetAvailableProviders() ([]string, error) {
 	if length > 0 {
 		providerPtrs := unsafe.Slice(providersPtr, length)
 		for i := int32(0); i < length; i++ {
-			providers[i] = cStringToString(providerPtrs[i])
+			providers[i] = cstrings.CStringToString(providerPtrs[i])
 		}
 	}
 
