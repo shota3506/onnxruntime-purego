@@ -1,4 +1,4 @@
-package onnxruntime
+package cstrings
 
 import (
 	"strconv"
@@ -23,7 +23,7 @@ func TestCStringToString(t *testing.T) {
 
 	for i, tc := range testCases {
 		t.Run("Case"+strconv.Itoa(i), func(t *testing.T) {
-			result := cStringToString(&tc.input[0])
+			result := CStringToString(&tc.input[0])
 			if result != tc.expected {
 				t.Errorf("cStringToString(%q) = %q, expected %q", tc.input, result, tc.expected)
 			}
@@ -32,7 +32,7 @@ func TestCStringToString(t *testing.T) {
 }
 
 func TestCStringToStringWithNil(t *testing.T) {
-	result := cStringToString(nil)
+	result := CStringToString(nil)
 	if result != "" {
 		t.Errorf("Expected empty string for nil pointer, got %q", result)
 	}

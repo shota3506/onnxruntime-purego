@@ -7,6 +7,7 @@ import (
 	"io"
 	"unsafe"
 
+	"github.com/shota3506/onnxruntime-purego/internal/cstrings"
 	"github.com/shota3506/onnxruntime-purego/onnxruntime/internal/api"
 )
 
@@ -222,7 +223,7 @@ func (s *Session) getInputName(index int) (string, error) {
 		return "", fmt.Errorf("failed to get input name: %w", err)
 	}
 
-	name := cStringToString(namePtr)
+	name := cstrings.CStringToString(namePtr)
 
 	// Free the allocated name
 	s.runtime.allocator.free(unsafe.Pointer(namePtr))
@@ -246,7 +247,7 @@ func (s *Session) getOutputName(index int) (string, error) {
 		return "", fmt.Errorf("failed to get output name: %w", err)
 	}
 
-	name := cStringToString(namePtr)
+	name := cstrings.CStringToString(namePtr)
 
 	// Free the allocated name
 	s.runtime.allocator.free(unsafe.Pointer(namePtr))

@@ -1,14 +1,14 @@
 #!/bin/bash
 #
-# ONNX Runtime Download Script
-# Usage: ./download.sh [VERSION]
-# Example: ./download.sh 1.23.0
+# ONNX Runtime GenAI Download Script
+# Usage: ./download_genai.sh [VERSION]
+# Example: ./download_genai.sh 0.11.0
 #
 
 set -e
 
-VERSION="${1:-1.23.0}"
-LIBS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/libs"
+VERSION="${1:-0.11.0}"
+LIBS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/libs/genai"
 TARGET_DIR="${LIBS_DIR}/${VERSION}"
 
 # Detect platform
@@ -34,11 +34,7 @@ detect_platform() {
             ARCH="x64"
             ;;
         arm64|aarch64)
-            if [ "$OS" = "linux" ]; then
-                ARCH="aarch64"
-            else
-                ARCH="arm64"
-            fi
+            ARCH="arm64"
             ;;
         *)
             echo "Error: Unsupported architecture: $arch"
@@ -51,8 +47,8 @@ detect_platform() {
 
 # Build download URL
 build_url() {
-    local base_url="https://github.com/microsoft/onnxruntime/releases/download/v${VERSION}"
-    FILENAME="onnxruntime-${OS}-${ARCH}-${VERSION}.tgz"
+    local base_url="https://github.com/microsoft/onnxruntime-genai/releases/download/v${VERSION}"
+    FILENAME="onnxruntime-genai-${VERSION}-${OS}-${ARCH}.tar.gz"
     DOWNLOAD_URL="${base_url}/${FILENAME}"
 
     echo "Download URL: ${DOWNLOAD_URL}"
@@ -60,7 +56,7 @@ build_url() {
 
 main() {
     echo "=========================================="
-    echo "ONNX Runtime Download (v${VERSION})"
+    echo "ONNX Runtime GenAI Download (v${VERSION})"
     echo "=========================================="
 
     detect_platform
@@ -94,7 +90,7 @@ main() {
     tar xzf "$FILENAME"
 
     # Find and move extracted directory
-    EXTRACTED_DIR=$(find . -maxdepth 1 -type d -name "onnxruntime-*" | head -n 1)
+    EXTRACTED_DIR=$(find . -maxdepth 1 -type d -name "onnxruntime-genai-*" | head -n 1)
     if [ -z "$EXTRACTED_DIR" ]; then
         echo "Error: Extracted directory not found"
         exit 1
@@ -111,7 +107,20 @@ main() {
     # Display library files
     echo ""
     echo "Library files:"
-    ls -lh "$TARGET_DIR/lib/"
+    if [ -d "$TARGET_DIR/lib" ]; then
+        ls -lh "$TARGET_DIR/lib/"
+    else
+        ls -lh "$TARGET_DIR/"
+    fi
+
+    # Show usage hint
+    echo ""
+    echo "Usage example:"
+    if [ "$OS" = "osx" ]; then
+        echo "  go run ./examples/genai/ -lib $TARGET_DIR/lib/libonnxruntime-genai.dylib -model <model_path>"
+    else
+        echo "  go run ./examples/genai/ -lib $TARGET_DIR/lib/libonnxruntime-genai.so -model <model_path>"
+    fi
 }
 
 main
