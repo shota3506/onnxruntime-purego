@@ -1,0 +1,15 @@
+models/
+
+# Downloaded libraries
+libs/
+
+# Git
+.git/
+.github/
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo

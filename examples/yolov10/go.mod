@@ -1,6 +1,6 @@
 module github.com/shota3506/onnxruntime-purego/examples/yolov8
 
-go 1.25.1
+go 1.25
 
 replace github.com/shota3506/onnxruntime-purego => ../..
 

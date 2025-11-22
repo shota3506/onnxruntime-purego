@@ -1,0 +1,18 @@
+services:
+  dev:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      args:
+        GO_VERSION: "1.25.0"
+        ONNXRUNTIME_VERSION: "1.23.2"
+        GENAI_VERSION: "0.11.0"
+    container_name: onnxruntime-purego-dev
+    volumes:
+      - .:/workspace
+    working_dir: /workspace
+    environment:
+      - LD_LIBRARY_PATH=/usr/local/lib
+    stdin_open: true
+    tty: true

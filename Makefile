@@ -1,4 +1,4 @@
-.PHONY: help test clean generate generate-ort generate-genai download-ort download-genai
+.PHONY: help test test-docker test-local clean generate generate-ort generate-genai download-ort download-genai
 
 # ONNX Runtime version (can be overridden)
 ONNXRUNTIME_VERSION ?= 1.23.0
@@ -52,7 +52,7 @@ help:
 	@echo ""
 	@echo "Environment variables:"
 	@echo "  ONNXRUNTIME_VERSION                    - ONNX Runtime version (default: $(ONNXRUNTIME_VERSION))"
-	@echo "  ONNXRUNTIME_GENAI_VERSION                          - GenAI version (default: $(ONNXRUNTIME_GENAI_VERSION))"
+	@echo "  ONNXRUNTIME_GENAI_VERSION              - GenAI version (default: $(ONNXRUNTIME_GENAI_VERSION))"
 	@echo "  ONNXRUNTIME_LIB_PATH                   - Path to ONNX Runtime library"
 	@echo "                                           (default: auto-detected based on OS and version)"
 	@echo "  FLAGS                                  - Additional test flags"
@@ -62,17 +62,17 @@ help:
 	@echo "  ONNX Runtime version: $(ONNXRUNTIME_VERSION)"
 	@echo "  GenAI version: $(ONNXRUNTIME_GENAI_VERSION)"
 	@echo "  Library path: $(ONNXRUNTIME_LIB_PATH)"
-	@echo ""
-	@echo "Examples:"
-	@echo "  make test FLAGS=-v"
-	@echo "  make test FLAGS=\"-v -run TestFullInferencePipeline\""
-	@echo "  make generate"
-	@echo "  make download-ort download-genai"
-	@echo "  ONNXRUNTIME_VERSION=1.23.0 make generate-ort"
-	@echo "  ONNXRUNTIME_GENAI_VERSION=0.11.0 make generate-genai"
 
 # Run tests
-test:
+test: test-docker
+
+# Run tests in Docker
+test-docker:
+	@echo "Running tests in Docker..."
+	docker-compose -f compose.yml run --rm dev go test $(FLAGS) ./...
+
+# Run tests locally (requires libraries installed)
+test-local:
 	ONNXRUNTIME_LIB_PATH=$(ONNXRUNTIME_LIB_PATH) go test $(FLAGS) ./...
 
 # Clean test cache

@@ -1,0 +1,38 @@
+ARG GO_VERSION=1.25.0
+FROM golang:${GO_VERSION}-bookworm
+
+RUN apt-get update && apt-get install -y \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install ONNX Runtime library
+ARG ONNXRUNTIME_VERSION=1.23.0
+RUN wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz && \
+    tar -xzf onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz && \
+    cp onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}/lib/libonnxruntime.so* /usr/local/lib/ && \
+    cp -r onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}/include/* /usr/local/include/ && \
+    ldconfig && \
+    rm -rf onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}*
+
+# Install ONNX Runtime GenAI library
+ARG GENAI_VERSION=0.11.0
+RUN wget https://github.com/microsoft/onnxruntime-genai/releases/download/v${GENAI_VERSION}/onnxruntime-genai-${GENAI_VERSION}-linux-x64.tar.gz && \
+    tar -xzf onnxruntime-genai-${GENAI_VERSION}-linux-x64.tar.gz && \
+    cp onnxruntime-genai-${GENAI_VERSION}-linux-x64/lib/libonnxruntime-genai.so /usr/local/lib/ && \
+    cp -r onnxruntime-genai-${GENAI_VERSION}-linux-x64/include/* /usr/local/include/ && \
+    ldconfig && \
+    rm -rf onnxruntime-genai-${GENAI_VERSION}-linux-x64*
+
+# Set library path for dynamic linker
+ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+
+# Set environment variables for tests
+ENV ONNXRUNTIME_LIB_PATH=/usr/local/lib/libonnxruntime.so
+ENV ONNXRUNTIME_GENAI_LIB_PATH=/usr/local/lib/libonnxruntime-genai.so
+
+WORKDIR /workspace
+
+# Copy go module files first for better caching
+COPY go.mod go.sum ./
+RUN go mod download
+
+CMD ["/bin/bash"]
