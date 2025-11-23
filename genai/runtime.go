@@ -34,10 +34,26 @@ func NewRuntime(libraryPath string) (*Runtime, error) {
 }
 
 // Close releases resources associated with the GenAI library.
-// This calls OgaShutdown to clean up global state.
+//
+// Note: This does NOT call OgaShutdown() because it would break other Runtime instances
+// in the same process. The ONNX Runtime GenAI C API has the following design limitation:
+//
+//   - OgaShutdown() destroys global state (KV cache pools, thread pools, etc.) that is
+//     shared across all Runtime instances in the process
+//   - There is no OgaInitialize() function to reinitialize the library after shutdown
+//   - According to the C API documentation, OgaShutdown() is intended to be called only
+//     at process exit, not when releasing individual Runtime instances
+//
+// As a result, calling OgaShutdown() in Close() would prevent creating new Runtime
+// instances after closing a previous one, causing segmentation faults when the new
+// Runtime tries to access the already-destroyed global state.
+//
+// The library resources will be automatically cleaned up by the OS when the process exits.
+// If you need explicit cleanup at process exit, you can manually call runtime.funcs.Shutdown()
+// as the very last operation before your program terminates.
 func (r *Runtime) Close() error {
 	if r.funcs != nil {
-		r.funcs.Shutdown()
+		// Do NOT call r.funcs.Shutdown() - see function documentation above
 		r.funcs = nil
 	}
 

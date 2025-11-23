@@ -1,0 +1,75 @@
+package genai
+
+import (
+	"os"
+	"testing"
+)
+
+var (
+	libraryPathPath string
+	testModelPath   string
+)
+
+// isGenAIAvailable checks if the GenAI library path is configured.
+func isGenAIAvailable() bool {
+	return libraryPathPath != ""
+}
+
+// isModelAvailable checks if a test model path is configured.
+func isModelAvailable() bool {
+	return testModelPath != ""
+}
+
+// newTestRuntime creates a new Runtime for testing.
+func newTestRuntime(t *testing.T) *Runtime {
+	t.Helper()
+
+	if !isGenAIAvailable() {
+		t.Skip("GenAI library not available. Set ONNXRUNTIME_GENAI_LIB_PATH environment variable.")
+	}
+
+	rt, err := NewRuntime(libraryPathPath)
+	if err != nil {
+		t.Fatalf("Failed to create runtime: %v", err)
+	}
+	t.Cleanup(func() { rt.Close() })
+
+	return rt
+}
+
+// newTestModel creates a new Model for testing.
+func newTestModel(t *testing.T, rt *Runtime) *Model {
+	t.Helper()
+
+	if !isModelAvailable() {
+		t.Skip("Test model not available. Set ONNXRUNTIME_GENAI_MODEL_PATH environment variable.")
+	}
+
+	model, err := rt.NewModel(testModelPath)
+	if err != nil {
+		t.Fatalf("Failed to create model: %v", err)
+	}
+	t.Cleanup(func() { model.Close() })
+
+	return model
+}
+
+// newTestTokenizer creates a new Tokenizer for testing.
+func newTestTokenizer(t *testing.T, model *Model) *Tokenizer {
+	t.Helper()
+
+	tokenizer, err := model.NewTokenizer()
+	if err != nil {
+		t.Fatalf("Failed to create tokenizer: %v", err)
+	}
+	t.Cleanup(func() { tokenizer.Close() })
+
+	return tokenizer
+}
+
+func TestMain(m *testing.M) {
+	libraryPathPath = os.Getenv("ONNXRUNTIME_GENAI_LIB_PATH")
+	testModelPath = os.Getenv("ONNXRUNTIME_GENAI_MODEL_PATH")
+
+	m.Run()
+}
