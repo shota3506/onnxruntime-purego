@@ -12,13 +12,21 @@ This library also includes experimental support for [ONNX Runtime GenAI](https:/
 
 ## Prerequisites
 
-NOTE: You need to have the ONNX Runtime shared library installed on your system:
+You need to have the ONNX Runtime shared library installed on your system:
 
 - **macOS**: `libonnxruntime.dylib`
 - **Linux**: `libonnxruntime.so`
 - **Windows**: `onnxruntime.dll`
 
 Download the appropriate library from the [ONNX Runtime releases](https://github.com/microsoft/onnxruntime/releases).
+
+The library will be automatically discovered if placed in standard system locations:
+
+- **macOS**: `/usr/local/lib`, `/opt/homebrew/lib`, `/usr/lib`
+- **Linux**: `/usr/local/lib`, `/usr/lib`, `/lib`
+- **Windows**: Standard DLL search paths
+
+Alternatively, you can specify a custom path when creating the runtime.
 
 ## Installation
 

@@ -10,10 +10,6 @@ import (
 
 var libraryPath string
 
-func isLibraryAvailable() bool {
-	return libraryPath != ""
-}
-
 func testModelPath() string {
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -30,6 +26,7 @@ func testModelPath() string {
 func newTestRuntime(t *testing.T) *Runtime {
 	t.Helper()
 
+	// Use environment variable if set, otherwise let the system search standard paths
 	runtime, err := NewRuntime(libraryPath, 23)
 	if err != nil {
 		t.Fatalf("Failed to create runtime: %v", err)

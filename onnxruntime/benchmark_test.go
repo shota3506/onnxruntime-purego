@@ -7,10 +7,6 @@ import (
 )
 
 func BenchmarkSessionRun(b *testing.B) {
-	if !isLibraryAvailable() {
-		b.Skip("ONNX Runtime library not available")
-	}
-
 	runtime, err := NewRuntime(libraryPath, 23)
 	if err != nil {
 		b.Fatalf("Failed to create runtime: %v", err)

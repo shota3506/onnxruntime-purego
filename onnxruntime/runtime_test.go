@@ -6,10 +6,6 @@ import (
 )
 
 func TestGetAvailableProviders(t *testing.T) {
-	if !isLibraryAvailable() {
-		t.Skip("ONNX Runtime library not available")
-	}
-
 	runtime := newTestRuntime(t)
 
 	providers, err := runtime.GetAvailableProviders()

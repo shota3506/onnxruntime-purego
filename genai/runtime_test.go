@@ -5,11 +5,7 @@ import (
 )
 
 func TestNewRuntime(t *testing.T) {
-	if !isGenAIAvailable() {
-		t.Skip("GenAI library not available. Set ONNXRUNTIME_GENAI_LIB_PATH environment variable.")
-	}
-
-	rt, err := NewRuntime(libraryPathPath)
+	rt, err := NewRuntime(libraryPath)
 	if err != nil {
 		t.Fatalf("Failed to create runtime: %v", err)
 	}
@@ -24,11 +20,7 @@ func TestNewRuntime(t *testing.T) {
 }
 
 func TestRuntimeClose(t *testing.T) {
-	if !isGenAIAvailable() {
-		t.Skip("GenAI library not available. Set ONNXRUNTIME_GENAI_LIB_PATH environment variable.")
-	}
-
-	rt, err := NewRuntime(libraryPathPath)
+	rt, err := NewRuntime(libraryPath)
 	if err != nil {
 		t.Fatalf("Failed to create runtime: %v", err)
 	}

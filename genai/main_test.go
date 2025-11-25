@@ -6,14 +6,9 @@ import (
 )
 
 var (
-	libraryPathPath string
-	testModelPath   string
+	libraryPath   string
+	testModelPath string
 )
-
-// isGenAIAvailable checks if the GenAI library path is configured.
-func isGenAIAvailable() bool {
-	return libraryPathPath != ""
-}
 
 // isModelAvailable checks if a test model path is configured.
 func isModelAvailable() bool {
@@ -24,11 +19,8 @@ func isModelAvailable() bool {
 func newTestRuntime(t *testing.T) *Runtime {
 	t.Helper()
 
-	if !isGenAIAvailable() {
-		t.Skip("GenAI library not available. Set ONNXRUNTIME_GENAI_LIB_PATH environment variable.")
-	}
-
-	rt, err := NewRuntime(libraryPathPath)
+	// Use environment variable if set, otherwise let the system search standard paths
+	rt, err := NewRuntime(libraryPath)
 	if err != nil {
 		t.Fatalf("Failed to create runtime: %v", err)
 	}
@@ -68,7 +60,7 @@ func newTestTokenizer(t *testing.T, model *Model) *Tokenizer {
 }
 
 func TestMain(m *testing.M) {
-	libraryPathPath = os.Getenv("ONNXRUNTIME_GENAI_LIB_PATH")
+	libraryPath = os.Getenv("ONNXRUNTIME_GENAI_LIB_PATH")
 	testModelPath = os.Getenv("ONNXRUNTIME_GENAI_MODEL_PATH")
 
 	m.Run()

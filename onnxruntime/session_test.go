@@ -9,10 +9,6 @@ import (
 )
 
 func TestNewSessionFromReader(t *testing.T) {
-	if !isLibraryAvailable() {
-		t.Skip("ONNX Runtime library not available")
-	}
-
 	runtime := newTestRuntime(t)
 
 	env, err := runtime.NewEnv("test", LoggingLevelWarning)
@@ -38,10 +34,6 @@ func TestNewSessionFromReader(t *testing.T) {
 }
 
 func TestNewSessionWithOptions(t *testing.T) {
-	if !isLibraryAvailable() {
-		t.Skip("ONNX Runtime library not available")
-	}
-
 	runtime := newTestRuntime(t)
 
 	env, err := runtime.NewEnv("test", LoggingLevelWarning)
@@ -68,10 +60,6 @@ func TestNewSessionWithOptions(t *testing.T) {
 }
 
 func TestNewSessionFromReaderWithInvalidModel(t *testing.T) {
-	if !isLibraryAvailable() {
-		t.Skip("ONNX Runtime library not available")
-	}
-
 	runtime := newTestRuntime(t)
 
 	env, err := runtime.NewEnv("test", LoggingLevelWarning)
@@ -88,10 +76,6 @@ func TestNewSessionFromReaderWithInvalidModel(t *testing.T) {
 }
 
 func TestSessionInputNames(t *testing.T) {
-	if !isLibraryAvailable() {
-		t.Skip("ONNX Runtime library not available")
-	}
-
 	session := newTestSession(t, newTestRuntime(t))
 
 	inputNames := session.InputNames()
@@ -101,10 +85,6 @@ func TestSessionInputNames(t *testing.T) {
 }
 
 func TestSessionOutputNames(t *testing.T) {
-	if !isLibraryAvailable() {
-		t.Skip("ONNX Runtime library not available")
-	}
-
 	session := newTestSession(t, newTestRuntime(t))
 
 	outputNames := session.OutputNames()
@@ -114,10 +94,6 @@ func TestSessionOutputNames(t *testing.T) {
 }
 
 func TestSessionRun(t *testing.T) {
-	if !isLibraryAvailable() {
-		t.Skip("ONNX Runtime library not available")
-	}
-
 	runtime := newTestRuntime(t)
 	session := newTestSession(t, runtime)
 
@@ -171,10 +147,6 @@ func TestSessionRun(t *testing.T) {
 }
 
 func TestSessionRunBatch(t *testing.T) {
-	if !isLibraryAvailable() {
-		t.Skip("ONNX Runtime library not available")
-	}
-
 	runtime := newTestRuntime(t)
 	session := newTestSession(t, runtime)
 
@@ -214,10 +186,6 @@ func TestSessionRunBatch(t *testing.T) {
 }
 
 func TestSessionRunWithClosedSession(t *testing.T) {
-	if !isLibraryAvailable() {
-		t.Skip("ONNX Runtime library not available")
-	}
-
 	runtime := newTestRuntime(t)
 	session := newTestSession(t, runtime)
 
@@ -239,10 +207,6 @@ func TestSessionRunWithClosedSession(t *testing.T) {
 }
 
 func TestSessionRunWithWrongInputShape(t *testing.T) {
-	if !isLibraryAvailable() {
-		t.Skip("ONNX Runtime library not available")
-	}
-
 	runtime := newTestRuntime(t)
 	session := newTestSession(t, runtime)
 
@@ -269,10 +233,6 @@ func TestSessionRunWithWrongInputShape(t *testing.T) {
 }
 
 func TestSessionRunWithWrongInputCount(t *testing.T) {
-	if !isLibraryAvailable() {
-		t.Skip("ONNX Runtime library not available")
-	}
-
 	runtime := newTestRuntime(t)
 	session := newTestSession(t, runtime)
 

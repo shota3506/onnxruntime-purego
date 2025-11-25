@@ -7,10 +7,6 @@ import (
 )
 
 func TestStatusError(t *testing.T) {
-	if !isLibraryAvailable() {
-		t.Skip("ONNX Runtime library not available")
-	}
-
 	runtime := newTestRuntime(t)
 
 	t.Run("nil status returns nil error", func(t *testing.T) {
@@ -62,10 +58,6 @@ func TestStatusError(t *testing.T) {
 }
 
 func TestStatusFunctions(t *testing.T) {
-	if !isLibraryAvailable() {
-		t.Skip("ONNX Runtime library not available")
-	}
-
 	runtime := newTestRuntime(t)
 
 	// Test creating a status
@@ -90,10 +82,6 @@ func TestStatusFunctions(t *testing.T) {
 }
 
 func TestReleaseStatusWithNullStatus(t *testing.T) {
-	if !isLibraryAvailable() {
-		t.Skip("ONNX Runtime library not available")
-	}
-
 	runtime := newTestRuntime(t)
 
 	// This should not crash

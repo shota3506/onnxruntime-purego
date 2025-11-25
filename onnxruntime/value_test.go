@@ -27,10 +27,6 @@ func assertTensorData[T TensorData](t *testing.T, tensor *Value, expectedData []
 }
 
 func TestValueGetValueType(t *testing.T) {
-	if !isLibraryAvailable() {
-		t.Skip("ONNX Runtime library not available")
-	}
-
 	runtime := newTestRuntime(t)
 
 	data := []float32{1.0, 2.0, 3.0}
@@ -53,10 +49,6 @@ func TestValueGetValueType(t *testing.T) {
 }
 
 func TestValueGetTensorShape(t *testing.T) {
-	if !isLibraryAvailable() {
-		t.Skip("ONNX Runtime library not available")
-	}
-
 	runtime := newTestRuntime(t)
 
 	originalShape := []int64{2, 3, 4}
@@ -82,10 +74,6 @@ func TestValueGetTensorShape(t *testing.T) {
 }
 
 func TestValueGetTensorElementType(t *testing.T) {
-	if !isLibraryAvailable() {
-		t.Skip("ONNX Runtime library not available")
-	}
-
 	runtime := newTestRuntime(t)
 
 	data := []float32{1.0, 2.0, 3.0}
@@ -108,10 +96,6 @@ func TestValueGetTensorElementType(t *testing.T) {
 }
 
 func TestValueGetTensorElementCount(t *testing.T) {
-	if !isLibraryAvailable() {
-		t.Skip("ONNX Runtime library not available")
-	}
-
 	runtime := newTestRuntime(t)
 
 	data := []float32{1.0, 2.0, 3.0, 4.0, 5.0, 6.0}
@@ -135,10 +119,6 @@ func TestValueGetTensorElementCount(t *testing.T) {
 }
 
 func TestValueClose(t *testing.T) {
-	if !isLibraryAvailable() {
-		t.Skip("ONNX Runtime library not available")
-	}
-
 	runtime := newTestRuntime(t)
 
 	data := []float32{1.0, 2.0, 3.0}
@@ -159,10 +139,6 @@ func TestValueClose(t *testing.T) {
 }
 
 func TestNewTensorValue(t *testing.T) {
-	if !isLibraryAvailable() {
-		t.Skip("ONNX Runtime library not available")
-	}
-
 	runtime := newTestRuntime(t)
 
 	t.Run("Float32", func(t *testing.T) {
@@ -465,10 +441,6 @@ func TestNewTensorValue(t *testing.T) {
 }
 
 func TestGetTensorData(t *testing.T) {
-	if !isLibraryAvailable() {
-		t.Skip("ONNX Runtime library not available")
-	}
-
 	runtime := newTestRuntime(t)
 
 	t.Run("Float32", func(t *testing.T) {

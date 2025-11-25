@@ -2,10 +2,25 @@ package genai
 
 import (
 	"fmt"
+	"runtime"
 
 	"github.com/ebitengine/purego"
 	"github.com/shota3506/onnxruntime-purego/genai/internal/api"
 )
+
+// getDefaultLibraryName returns the default GenAI library name based on the current platform.
+func getDefaultLibraryName() string {
+	switch runtime.GOOS {
+	case "darwin":
+		return "libonnxruntime-genai.dylib"
+	case "linux":
+		return "libonnxruntime-genai.so"
+	case "windows":
+		return "onnxruntime-genai.dll"
+	default:
+		return "libonnxruntime-genai.so"
+	}
+}
 
 // Runtime represents an instance of the ONNX Runtime GenAI library.
 type Runtime struct {
@@ -16,7 +31,13 @@ type Runtime struct {
 // NewRuntime loads the ONNX Runtime GenAI shared library from the specified path.
 // The libraryPath should point to the GenAI shared library
 // (e.g., "libonnxruntime-genai.dylib" on macOS, "libonnxruntime-genai.so" on Linux).
+// If libraryPath is empty, the system will search for the library in standard locations
 func NewRuntime(libraryPath string) (*Runtime, error) {
+	// If no path is provided, use the default library name and let the system search standard paths
+	if libraryPath == "" {
+		libraryPath = getDefaultLibraryName()
+	}
+
 	libraryHandle, err := purego.Dlopen(libraryPath, purego.RTLD_NOW|purego.RTLD_GLOBAL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load GenAI library: %w", err)

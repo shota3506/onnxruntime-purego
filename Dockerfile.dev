@@ -25,10 +25,6 @@ RUN wget https://github.com/microsoft/onnxruntime-genai/releases/download/v${GEN
 # Set library path for dynamic linker
 ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
-# Set environment variables for tests
-ENV ONNXRUNTIME_LIB_PATH=/usr/local/lib/libonnxruntime.so
-ENV ONNXRUNTIME_GENAI_LIB_PATH=/usr/local/lib/libonnxruntime-genai.so
-
 WORKDIR /workspace
 
 # Copy go module files first for better caching

@@ -2,6 +2,7 @@ package onnxruntime
 
 import (
 	"fmt"
+	"runtime"
 	"slices"
 	"unsafe"
 
@@ -13,6 +14,20 @@ import (
 
 // supportedAPIVersions lists all API versions supported by this library.
 var supportedAPIVersions = []uint32{23}
+
+// getDefaultLibraryName returns the default library name based on the current platform.
+func getDefaultLibraryName() string {
+	switch runtime.GOOS {
+	case "darwin":
+		return "libonnxruntime.dylib"
+	case "linux":
+		return "libonnxruntime.so"
+	case "windows":
+		return "onnxruntime.dll"
+	default:
+		return "libonnxruntime.so"
+	}
+}
 
 // Runtime represents an instance of the ONNX Runtime library.
 // Multiple Runtime instances can coexist, allowing the use of different
@@ -34,11 +49,17 @@ type Runtime struct {
 // initializes the C API interface with the specified API version.
 // The libraryPath should point to the ONNX Runtime shared library
 // (e.g., "libonnxruntime.so", "libonnxruntime.dylib", or "onnxruntime.dll").
+// If libraryPath is empty, the system will search for the library in standard locations
 // The apiVersion parameter specifies which ONNX Runtime C API version to use (e.g., 23, 24).
 func NewRuntime(libraryPath string, apiVersion uint32) (*Runtime, error) {
 	// Validate API version is supported
 	if !isSupportedAPIVersion(apiVersion) {
 		return nil, fmt.Errorf("unsupported API version %d (supported: %v)", apiVersion, supportedAPIVersions)
+	}
+
+	// If no path is provided, use the default library name and let the system search standard paths
+	if libraryPath == "" {
+		libraryPath = getDefaultLibraryName()
 	}
 
 	libraryHandle, err := purego.Dlopen(libraryPath, purego.RTLD_NOW|purego.RTLD_GLOBAL)

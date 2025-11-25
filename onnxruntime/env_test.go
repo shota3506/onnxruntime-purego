@@ -5,10 +5,6 @@ import (
 )
 
 func TestNewEnv(t *testing.T) {
-	if !isLibraryAvailable() {
-		t.Skip("ONNX Runtime library not available")
-	}
-
 	runtime := newTestRuntime(t)
 
 	logLevels := []LoggingLevel{
@@ -34,10 +30,6 @@ func TestNewEnv(t *testing.T) {
 }
 
 func TestEnvClose(t *testing.T) {
-	if !isLibraryAvailable() {
-		t.Skip("ONNX Runtime library not available")
-	}
-
 	runtime := newTestRuntime(t)
 
 	env, err := runtime.NewEnv("test", LoggingLevelWarning)
