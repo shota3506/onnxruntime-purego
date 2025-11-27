@@ -1,0 +1,28 @@
+name: Build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+
+    - uses: actions/setup-go@v6
+      with:
+        go-version-file: 'go.mod'
+
+    - name: Install staticcheck
+      run: go install honnef.co/go/tools/cmd/staticcheck@2025.1.1
+
+    - name: Build
+      run: go build -v ./...
+
+    - name: Lint
+      run: |
+        go vet -v ./...
+        staticcheck ./...
