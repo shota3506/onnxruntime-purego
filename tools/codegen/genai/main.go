@@ -23,9 +23,9 @@ var funcsTemplate string
 
 // CType represents a parsed C type
 type CType struct {
-	BaseType   string
-	IsPointer  int  // number of pointer levels
-	IsConst    bool
+	BaseType  string
+	IsPointer int // number of pointer levels
+	IsConst   bool
 }
 
 // Param represents a function parameter
@@ -37,11 +37,11 @@ type Param struct {
 
 // Function represents a parsed C function declaration
 type Function struct {
-	Name       string
-	ReturnType CType
+	Name         string
+	ReturnType   CType
 	GoReturnType string
-	Params     []Param
-	GoName     string
+	Params       []Param
+	GoName       string
 }
 
 // OpaqueType represents an opaque C type
@@ -52,10 +52,10 @@ type OpaqueType struct {
 
 // GeneratorConfig holds the configuration for code generation
 type GeneratorConfig struct {
-	HeaderPath   string
-	PackageName  string
-	OpaqueTypes  []OpaqueType
-	Functions    []Function
+	HeaderPath  string
+	PackageName string
+	OpaqueTypes []OpaqueType
+	Functions   []Function
 }
 
 var (
@@ -185,13 +185,7 @@ func parseFunctions(content string, opaqueTypes []OpaqueType) []Function {
 		}
 
 		// Generate Go-friendly name
-		goName := name
-		// Remove Oga prefix for Go name
-		if strings.HasPrefix(goName, "Oga") {
-			goName = goName[3:]
-		}
-		// Handle underscores (e.g., OgaGenerator_IsDone -> GeneratorIsDone)
-		goName = strings.ReplaceAll(goName, "_", "")
+		goName := strings.ReplaceAll(strings.TrimPrefix(name, "Oga"), "_", "")
 
 		functions = append(functions, Function{
 			Name:         name,
@@ -433,7 +427,7 @@ func cTypeToGoType(ctype CType, typeMap map[string]bool) string {
 
 func executeTemplate(path, tmplStr string, config GeneratorConfig) error {
 	funcMap := template.FuncMap{
-		"lower": strings.ToLower,
+		"lower":     strings.ToLower,
 		"hasPrefix": strings.HasPrefix,
 	}
 

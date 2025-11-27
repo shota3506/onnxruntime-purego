@@ -46,11 +46,6 @@ func (r *Runtime) newStringArray(strings []string) (*stringArray, error) {
 	}, nil
 }
 
-// newStringArray is a convenience wrapper that calls Runtime.newStringArray.
-func newStringArray(r *Runtime, strings []string) (*stringArray, error) {
-	return r.newStringArray(strings)
-}
-
 // Close releases resources associated with the string array.
 func (s *stringArray) Close() {
 	if s.ptr != 0 {

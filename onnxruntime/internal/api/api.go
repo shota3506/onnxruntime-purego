@@ -49,7 +49,7 @@ type APIFuncs interface {
 	// Status and error handling
 	CreateStatus(OrtErrorCode, *byte) OrtStatus
 	GetErrorCode(OrtStatus) OrtErrorCode
-	GetErrorMessage(OrtStatus) uintptr
+	GetErrorMessage(OrtStatus) unsafe.Pointer
 	ReleaseStatus(OrtStatus)
 
 	// Environment

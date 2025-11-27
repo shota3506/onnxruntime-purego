@@ -76,8 +76,8 @@ func TestStatusFunctions(t *testing.T) {
 
 	// Test getting error message
 	msgPtrVal := runtime.apiFuncs.GetErrorMessage(status)
-	if msgPtrVal == 0 {
-		t.Error("Error message pointer should not be 0")
+	if msgPtrVal == nil {
+		t.Error("Error message pointer should not be nil")
 	}
 }
 

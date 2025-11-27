@@ -203,12 +203,7 @@ func (r *Runtime) statusError(status api.OrtStatus) error {
 	code := r.apiFuncs.GetErrorCode(status)
 	messagePtr := r.apiFuncs.GetErrorMessage(status)
 
-	// SAFETY: This conversion is safe because:
-	// 1. The pointer is returned from GetErrorMessage (C function)
-	// 2. It points to a string managed by the status object
-	// 3. We copy the string before releasing the status
-	//nolint:govet // Safe FFI pattern: reading C string
-	message := cstrings.CStringToString((*byte)(unsafe.Pointer(messagePtr)))
+	message := cstrings.CStringToString((*byte)(messagePtr))
 
 	r.apiFuncs.ReleaseStatus(status)
 

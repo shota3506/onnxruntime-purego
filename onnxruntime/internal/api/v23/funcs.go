@@ -13,7 +13,7 @@ type Funcs struct {
 	// Status and error handling
 	createStatus    func(api.OrtErrorCode, *byte) api.OrtStatus
 	getErrorCode    func(api.OrtStatus) api.OrtErrorCode
-	getErrorMessage func(api.OrtStatus) uintptr
+	getErrorMessage func(api.OrtStatus) unsafe.Pointer
 	releaseStatus   func(api.OrtStatus)
 
 	// Environment
@@ -29,10 +29,10 @@ type Funcs struct {
 	releaseMemoryInfo   func(api.OrtMemoryInfo)
 
 	// Session options
-	createSessionOptions                    func(*api.OrtSessionOptions) api.OrtStatus
-	setIntraOpNumThreads                    func(api.OrtSessionOptions, int32) api.OrtStatus
-	sessionOptionsAppendExecutionProvider   func(api.OrtSessionOptions, *byte, **byte, **byte, uintptr) api.OrtStatus
-	releaseSessionOptions                   func(api.OrtSessionOptions)
+	createSessionOptions                  func(*api.OrtSessionOptions) api.OrtStatus
+	setIntraOpNumThreads                  func(api.OrtSessionOptions, int32) api.OrtStatus
+	sessionOptionsAppendExecutionProvider func(api.OrtSessionOptions, *byte, **byte, **byte, uintptr) api.OrtStatus
+	releaseSessionOptions                 func(api.OrtSessionOptions)
 
 	// Session
 	createSession          func(api.OrtEnv, *byte, api.OrtSessionOptions, *api.OrtSession) api.OrtStatus
@@ -74,22 +74,15 @@ func InitializeFuncs(libraryHandle uintptr) (*Funcs, error) {
 	}
 
 	// Get the versioned API
-	var getAPIFunc func(uint32) uintptr
+	var getAPIFunc func(uint32) unsafe.Pointer
 	purego.RegisterFunc(&getAPIFunc, apiBase.GetAPI)
 
 	apiPtr := getAPIFunc(APIVersion)
-	if apiPtr == 0 {
+	if apiPtr == nil {
 		return nil, fmt.Errorf("failed to get OrtAPI for version %d", APIVersion)
 	}
 
-	// SAFETY: This uintptr-to-unsafe.Pointer conversion is safe because:
-	// 1. The pointer is returned from OrtGetAPIBase (C function)
-	// 2. It points to a static API structure in the ONNX Runtime library
-	// 3. This structure remains valid for the lifetime of the loaded library
-	// 4. The memory is not managed by Go's GC
-	// Note: go vet will warn about this, but it's a false positive for FFI
-	//nolint:govet // Safe FFI pattern: pointer to static C API structure
-	api := (*API)(unsafe.Pointer(apiPtr))
+	api := (*API)(apiPtr)
 
 	funcs := &Funcs{}
 
@@ -149,7 +142,7 @@ func (f *Funcs) GetErrorCode(status api.OrtStatus) api.OrtErrorCode {
 	return f.getErrorCode(status)
 }
 
-func (f *Funcs) GetErrorMessage(status api.OrtStatus) uintptr {
+func (f *Funcs) GetErrorMessage(status api.OrtStatus) unsafe.Pointer {
 	return f.getErrorMessage(status)
 }
 
