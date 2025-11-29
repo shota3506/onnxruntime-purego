@@ -34,10 +34,6 @@ func TestMain(m *testing.M) {
 	}
 
 	libPath := os.Getenv("ONNXRUNTIME_LIB_PATH")
-	if libPath == "" {
-		fmt.Fprintf(os.Stderr, "ONNXRUNTIME_LIB_PATH environment variable not set\n")
-		os.Exit(1)
-	}
 
 	var err error
 	testRuntime, err = onnxruntime.NewRuntime(libPath, 23)

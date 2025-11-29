@@ -9,6 +9,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      ONNXRUNTIME_VERSION: "1.23.0"
+      ONNXRUNTIME_GENAI_VERSION: "0.11.0"
     steps:
     - uses: actions/checkout@v6
 
@@ -26,3 +29,38 @@ jobs:
       run: |
         go vet -v ./...
         staticcheck ./...
+
+    - name: Cache ONNX Runtime
+      id: cache-onnxruntime
+      uses: actions/cache@v4
+      with:
+        path: lib/libonnxruntime.so*
+        key: onnxruntime-linux-x64-${{ env.ONNXRUNTIME_VERSION }}
+
+    - name: Download ONNX Runtime
+      if: steps.cache-onnxruntime.outputs.cache-hit != 'true'
+      run: |
+        ./download.sh ${{ env.ONNXRUNTIME_VERSION }}
+        mkdir -p lib
+        cp libs/${{ env.ONNXRUNTIME_VERSION }}/lib/libonnxruntime.so* lib/
+        rm -rf libs/${{ env.ONNXRUNTIME_VERSION }}
+
+    - name: Cache ONNX Runtime GenAI
+      id: cache-genai
+      uses: actions/cache@v4
+      with:
+        path: lib/libonnxruntime-genai.so
+        key: genai-linux-x64-${{ env.ONNXRUNTIME_GENAI_VERSION }}
+
+    - name: Download ONNX Runtime GenAI
+      if: steps.cache-genai.outputs.cache-hit != 'true'
+      run: |
+        ./download_genai.sh ${{ env.ONNXRUNTIME_GENAI_VERSION }}
+        mkdir -p lib
+        cp libs/genai/${{ env.ONNXRUNTIME_GENAI_VERSION }}/lib/libonnxruntime-genai.so lib/
+        rm -rf libs/genai/${{ env.ONNXRUNTIME_GENAI_VERSION }}
+
+    - name: Test
+      run: go test -v ./...
+      env:
+        LD_LIBRARY_PATH: ${{ github.workspace }}/lib
