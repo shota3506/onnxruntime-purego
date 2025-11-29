@@ -37,7 +37,7 @@ func newTestModel(t *testing.T, rt *Runtime) *Model {
 		t.Skip("Test model not available. Set ONNXRUNTIME_GENAI_MODEL_PATH environment variable.")
 	}
 
-	model, err := rt.NewModel(testModelPath)
+	model, err := rt.NewModel(testModelPath, nil)
 	if err != nil {
 		t.Fatalf("Failed to create model: %v", err)
 	}

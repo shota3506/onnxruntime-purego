@@ -11,7 +11,7 @@ func TestNewModel(t *testing.T) {
 
 	rt := newTestRuntime(t)
 
-	model, err := rt.NewModel(testModelPath)
+	model, err := rt.NewModel(testModelPath, nil)
 	if err != nil {
 		t.Fatalf("Failed to create model: %v", err)
 	}

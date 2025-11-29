@@ -85,16 +85,81 @@ func (r *Runtime) Close() error {
 	return nil
 }
 
+// ProviderOptions contains configuration options for an execution provider.
+type ProviderOptions map[string]string
+
+// ModelOptions configures options for creating a model.
+type ModelOptions struct {
+	// Providers specifies the execution providers to use, in order of preference.
+	Providers []string
+
+	// ProviderOptions specifies options for each provider.
+	// The key is the provider name, and the value is a map of option key-value pairs.
+	ProviderOptions map[string]ProviderOptions
+}
+
 // NewModel loads a model from the specified directory path.
 // The path should point to a directory containing the model files
 // (e.g., genai_config.json, model.onnx, tokenizer files).
-func (r *Runtime) NewModel(modelPath string) (*Model, error) {
+// If options is nil, default options will be used.
+func (r *Runtime) NewModel(modelPath string, options *ModelOptions) (*Model, error) {
 	pathBytes := stringToBytes(modelPath)
 
-	var modelPtr api.OgaModel
-	result := r.funcs.CreateModel(&pathBytes[0], &modelPtr)
+	// If no options or no providers specified, use the simple CreateModel
+	if options == nil || len(options.Providers) == 0 {
+		var modelPtr api.OgaModel
+		result := r.funcs.CreateModel(&pathBytes[0], &modelPtr)
+		if err := resultError(r.funcs, result); err != nil {
+			return nil, fmt.Errorf("failed to create model: %w", err)
+		}
+
+		return &Model{
+			ptr:     modelPtr,
+			runtime: r,
+		}, nil
+	}
+
+	// Create config for provider configuration
+	var configPtr api.OgaConfig
+	result := r.funcs.CreateConfig(&pathBytes[0], &configPtr)
 	if err := resultError(r.funcs, result); err != nil {
-		return nil, fmt.Errorf("failed to create model: %w", err)
+		return nil, fmt.Errorf("failed to create config: %w", err)
+	}
+	defer r.funcs.DestroyConfig(configPtr)
+
+	// Clear existing providers
+	result = r.funcs.ConfigClearProviders(configPtr)
+	if err := resultError(r.funcs, result); err != nil {
+		return nil, fmt.Errorf("failed to clear providers: %w", err)
+	}
+
+	// Append providers
+	for _, provider := range options.Providers {
+		providerBytes := stringToBytes(provider)
+		result = r.funcs.ConfigAppendProvider(configPtr, &providerBytes[0])
+		if err := resultError(r.funcs, result); err != nil {
+			return nil, fmt.Errorf("failed to append provider %q: %w", provider, err)
+		}
+
+		// Set provider options if specified
+		if options.ProviderOptions != nil {
+			if providerOpts, ok := options.ProviderOptions[provider]; ok {
+				for key, value := range providerOpts {
+					keyBytes := stringToBytes(key)
+					valueBytes := stringToBytes(value)
+					result = r.funcs.ConfigSetProviderOption(configPtr, &providerBytes[0], &keyBytes[0], &valueBytes[0])
+					if err := resultError(r.funcs, result); err != nil {
+						return nil, fmt.Errorf("failed to set provider option %q=%q for %q: %w", key, value, provider, err)
+					}
+				}
+			}
+		}
+	}
+
+	var modelPtr api.OgaModel
+	result = r.funcs.CreateModelFromConfig(configPtr, &modelPtr)
+	if err := resultError(r.funcs, result); err != nil {
+		return nil, fmt.Errorf("failed to create model from config: %w", err)
 	}
 
 	return &Model{
