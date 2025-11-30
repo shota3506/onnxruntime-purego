@@ -1,4 +1,4 @@
-.PHONY: help test test-docker test-local clean generate generate-ort generate-genai download-ort download-genai
+.PHONY: help test test-docker test-local clean generate generate-ort generate-genai download-ort download-genai setup-workspace lint
 
 # ONNX Runtime version (can be overridden)
 ONNXRUNTIME_VERSION ?= 1.23.0
@@ -48,6 +48,8 @@ help:
 	@echo "  make generate-genai                    - Generate GenAI API bindings"
 	@echo "  make download-ort                      - Download ONNX Runtime library"
 	@echo "  make download-genai                    - Download GenAI library"
+	@echo "  make setup-workspace                   - Setup go.work for local development"
+	@echo "  make lint                              - Lint all modules in workspace"
 	@echo "  make help                              - Show this help message"
 	@echo ""
 	@echo "Environment variables:"
@@ -78,6 +80,18 @@ test-local:
 # Clean test cache
 clean:
 	go clean -testcache
+
+# Module path for workspace-wide operations
+MODULE_PATH := github.com/shota3506/onnxruntime-purego
+
+# Setup go.work for local development
+setup-workspace:
+	go work init . ./examples/resnet ./examples/roberta-sentiment ./examples/yolov10 ./examples/genai/phi3 ./examples/genai/phi3.5-vision
+
+# Lint all modules in workspace
+lint:
+	go vet $(MODULE_PATH)/...
+	staticcheck $(MODULE_PATH)/...
 
 # Download ONNX Runtime library
 download-ort:
