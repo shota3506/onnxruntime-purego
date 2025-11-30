@@ -30,7 +30,7 @@ func run(modelPath, prompt string, maxLength int) error {
 
 	// Load model
 	fmt.Printf("Loading model: %s\n", modelPath)
-	model, err := runtime.NewModel(modelPath)
+	model, err := runtime.NewModel(modelPath, nil)
 	if err != nil {
 		return fmt.Errorf("failed to load model: %w", err)
 	}
