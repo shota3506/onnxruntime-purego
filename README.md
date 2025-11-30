@@ -1,4 +1,5 @@
 # onnxruntime-purego
+[![Go Reference](https://pkg.go.dev/badge/github.com/shota3506/onnxruntime-purego.svg)](https://pkg.go.dev/github.com/shota3506/onnxruntime-purego)
 
 Pure Go bindings for [ONNX Runtime](https://github.com/microsoft/onnxruntime) using [ebitengine/purego](https://github.com/ebitengine/purego).
 
@@ -6,9 +7,16 @@ This library provides a pure Go interface to ONNX Runtime without requiring cgo,
 
 NOTE: This project is currently unstable. APIs may change without notice.
 
-## ONNX Runtime GenAI Support (Experimental)
+## Supported Versions
 
-This library also includes experimental support for [ONNX Runtime GenAI](https://github.com/microsoft/onnxruntime-genai), enabling text generation with large language models. See `examples/genai/` for usage examples.
+| Library | Supported Version |
+|---------|-------------------|
+| ONNX Runtime | 1.23.x |
+| ONNX Runtime GenAI | 0.11.x |
+
+## ONNX Runtime GenAI Support
+
+This library also includes experimental support for [ONNX Runtime GenAI](https://github.com/microsoft/onnxruntime-genai), enabling text generation with large language models. See [`examples/`](./examples/) for usage examples.
 
 ## Prerequisites
 
@@ -36,13 +44,4 @@ go get github.com/shota3506/onnxruntime-purego
 
 ## Examples
 
-The `examples/` directory contains complete examples:
-
-- **resnet**: Image classification using ResNet
-- **roberta-sentiment**: Sentiment analysis using RoBERTa
-- **yolov10**: Object detection using YOLOv10
-
-- **genai/phi3**: Text generation using Phi-3
-- **genai/phi3.5-vision**: Multimodal vision-language processing using Phi-3.5-Vision
-
-See each example's README for detailed instructions.
+See the [`examples/`](./examples/) directory for complete usage examples.

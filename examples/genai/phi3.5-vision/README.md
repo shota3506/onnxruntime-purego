@@ -2,11 +2,11 @@
 
 This example demonstrates multimodal vision-language processing using ONNX Runtime GenAI with the Phi-3.5-Vision model. The model can analyze images and answer questions about their content.
 
+See [examples/README.md](../README.md) for common GenAI prerequisites and troubleshooting.
+
 ## Prerequisites
 
-1. **ONNX Runtime GenAI Library**: Download from [releases](https://github.com/microsoft/onnxruntime-genai/releases)
-
-2. **Phi-3.5-Vision Model** (~3.2GB):
+1. **Phi-3.5-Vision Model** (~3.2GB):
    ```bash
    huggingface-cli download microsoft/Phi-3.5-vision-instruct-onnx \
      --include "cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/*" \
@@ -49,8 +49,6 @@ export ONNXRUNTIME_GENAI_LIB_PATH=/path/to/libonnxruntime-genai.dylib
 
    Reference: [GitHub Issue #1146](https://github.com/microsoft/onnxruntime-genai/issues/1146)
 
-2. **Library not found**: Ensure `ONNXRUNTIME_GENAI_LIB_PATH` is set correctly.
+2. **Model loading fails**: Verify the model directory contains all required files (genai_config.json, processor_config.json, and three ONNX models).
 
-3. **Model loading fails**: Verify the model directory contains all required files (genai_config.json, processor_config.json, and three ONNX models).
-
-4. **Out of memory during generation**: Reduce `-max-length` or close other applications.
+3. **Out of memory during generation**: Reduce `-max-length` or close other applications.
