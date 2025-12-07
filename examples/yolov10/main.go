@@ -171,6 +171,17 @@ func parseYOLOv10Output(output []float32, shape []int64, confThreshold float64, 
 func drawDetections(img image.Image, detections []Detection, outputPath string) error {
 	dc := gg.NewContextForImage(img)
 
+	// Calculate scale factor based on image dimensions
+	imgWidth := float64(img.Bounds().Dx())
+	imgHeight := float64(img.Bounds().Dy())
+	scale := (imgWidth + imgHeight) / 2 / 500 // Scale relative to 500px baseline
+	if scale < 1 {
+		scale = 1
+	}
+	if scale > 4 {
+		scale = 4
+	}
+
 	// Define colors for different classes (cycling through a palette)
 	colors := []color.RGBA{
 		{255, 0, 0, 255},   // Red
@@ -191,7 +202,7 @@ func drawDetections(img image.Image, detections []Detection, outputPath string) 
 
 		// Draw bounding box
 		dc.SetColor(boxColor)
-		dc.SetLineWidth(4)
+		dc.SetLineWidth(2 * scale)
 		dc.DrawRectangle(
 			float64(det.Box.X1),
 			float64(det.Box.Y1),
@@ -199,6 +210,31 @@ func drawDetections(img image.Image, detections []Detection, outputPath string) 
 			float64(det.Box.Y2-det.Box.Y1),
 		)
 		dc.Stroke()
+
+		// Draw label background
+		label := fmt.Sprintf("%s %.0f%%", det.ClassName, det.Confidence*100)
+		labelWidth, labelHeight := dc.MeasureString(label)
+		labelWidth *= scale
+		labelHeight *= scale
+		padding := 4.0 * scale
+		labelX := float64(det.Box.X1)
+		labelY := float64(det.Box.Y1) - labelHeight - padding*2
+		if labelY < 0 {
+			labelY = float64(det.Box.Y1)
+		}
+
+		// Draw background rectangle for label
+		dc.SetColor(boxColor)
+		dc.DrawRectangle(labelX, labelY, labelWidth+padding*2, labelHeight+padding*2)
+		dc.Fill()
+
+		// Draw label text with scaling
+		dc.SetColor(color.White)
+		dc.Push()
+		dc.Translate(labelX+padding, labelY+labelHeight+padding)
+		dc.Scale(scale, scale)
+		dc.DrawStringAnchored(label, 0, 0, 0, 0)
+		dc.Pop()
 	}
 
 	// Detect format based on extension and save
