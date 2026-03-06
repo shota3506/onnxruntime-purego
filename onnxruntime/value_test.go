@@ -465,6 +465,28 @@ func TestValueCleanupDoesNotPanic(t *testing.T) {
 	runtime.GC()
 }
 
+// TestValueCloseStopsCleanup verifies that calling Close() prevents the GC
+// cleanup from running. Without cleanup.Stop(), Close() releases the native
+// OrtValue, and then the GC cleanup fires with the original (now stale) ptr,
+// causing a double-free / SIGSEGV.
+func TestValueCloseStopsCleanup(t *testing.T) {
+	rt := newTestRuntime(t)
+
+	func() {
+		tensor, err := NewTensorValue(rt, []float32{1, 2, 3}, []int64{3})
+		if err != nil {
+			t.Fatalf("Failed to create tensor: %v", err)
+		}
+		// Close explicitly, then drop the reference.
+		// GC should NOT attempt to release the already-freed value.
+		tensor.Close()
+	}()
+
+	// Force GC. If cleanup.Stop() is missing, the cleanup will try to
+	// ReleaseValue on an already-freed pointer.
+	runtime.GC()
+}
+
 func TestGetTensorData(t *testing.T) {
 	runtime := newTestRuntime(t)
 

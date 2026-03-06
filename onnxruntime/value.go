@@ -23,6 +23,7 @@ type Value struct {
 	ptr     api.OrtValue
 	infoPtr api.OrtTensorTypeAndShapeInfo
 	runtime *Runtime
+	cleanup runtime.Cleanup // handle to cancel GC cleanup after explicit Close
 }
 
 func (r *Runtime) newValueFromPtr(ptr api.OrtValue) *Value {
@@ -36,7 +37,7 @@ func (r *Runtime) newValueFromPtr(ptr api.OrtValue) *Value {
 	// collecting it (the cleanup itself would hold a reference), causing
 	// a panic: "runtime.AddCleanup: cleanup function closes over ptr".
 	// Instead, pass the OrtValue as the cleanup arg and capture only r.
-	runtime.AddCleanup(v, func(p api.OrtValue) {
+	v.cleanup = runtime.AddCleanup(v, func(p api.OrtValue) {
 		if p != 0 && r.apiFuncs != nil {
 			r.apiFuncs.ReleaseValue(p)
 		}
@@ -146,6 +147,7 @@ func (v *Value) GetTensorElementCount() (int, error) {
 // recommended to ensure timely release of native memory, especially when
 // dealing with large tensors or high-frequency inference operations.
 func (v *Value) Close() {
+	v.cleanup.Stop() // prevent GC cleanup from double-freeing
 	v.releaseValue()
 	v.releaseInfo()
 }
