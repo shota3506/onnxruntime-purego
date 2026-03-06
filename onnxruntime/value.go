@@ -32,9 +32,15 @@ func (r *Runtime) newValueFromPtr(ptr api.OrtValue) *Value {
 	}
 
 	// Clean up resources when the Value is no longer reachable.
-	runtime.AddCleanup(v, func(_ struct{}) {
-		v.Close()
-	}, struct{}{})
+	// The cleanup must not close over v, as that would prevent GC from
+	// collecting it (the cleanup itself would hold a reference), causing
+	// a panic: "runtime.AddCleanup: cleanup function closes over ptr".
+	// Instead, pass the OrtValue as the cleanup arg and capture only r.
+	runtime.AddCleanup(v, func(p api.OrtValue) {
+		if p != 0 && r.apiFuncs != nil {
+			r.apiFuncs.ReleaseValue(p)
+		}
+	}, ptr)
 	return v
 }
 

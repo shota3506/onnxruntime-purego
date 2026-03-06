@@ -1,6 +1,7 @@
 package onnxruntime
 
 import (
+	"runtime"
 	"slices"
 	"testing"
 )
@@ -438,6 +439,30 @@ func TestNewTensorValue(t *testing.T) {
 			t.Error("Expected error when creating tensor with empty int64 data")
 		}
 	})
+}
+
+// TestValueCleanupDoesNotPanic verifies that the GC cleanup for Value does not
+// panic. Prior to the fix, the cleanup closure captured the *Value itself,
+// which prevented the GC from collecting it and caused:
+//
+//	panic: runtime.AddCleanup: cleanup function closes over ptr
+func TestValueCleanupDoesNotPanic(t *testing.T) {
+	rt := newTestRuntime(t)
+
+	// Create a tensor and immediately drop all references so it becomes
+	// eligible for garbage collection.
+	func() {
+		tensor, err := NewTensorValue(rt, []float32{1, 2, 3}, []int64{3})
+		if err != nil {
+			t.Fatalf("Failed to create tensor: %v", err)
+		}
+		// Do NOT defer tensor.Close() — we want GC to trigger the cleanup.
+		_ = tensor
+	}()
+
+	// Force GC to run the cleanup. If the cleanup closure incorrectly
+	// captures the *Value, this will panic.
+	runtime.GC()
 }
 
 func TestGetTensorData(t *testing.T) {
