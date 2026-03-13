@@ -23,7 +23,8 @@ type Value struct {
 	ptr     api.OrtValue
 	infoPtr api.OrtTensorTypeAndShapeInfo
 	runtime *Runtime
-	cleanup runtime.Cleanup // handle to cancel GC cleanup after explicit Close
+	cleanup     runtime.Cleanup // handle to cancel GC cleanup of OrtValue
+	infoCleanup runtime.Cleanup // handle to cancel GC cleanup of TensorTypeAndShapeInfo
 }
 
 func (r *Runtime) newValueFromPtr(ptr api.OrtValue) *Value {
@@ -32,16 +33,9 @@ func (r *Runtime) newValueFromPtr(ptr api.OrtValue) *Value {
 		runtime: r,
 	}
 
-	// Clean up resources when the Value is no longer reachable.
-	// The cleanup must not close over v, as that would prevent GC from
-	// collecting it (the cleanup itself would hold a reference), causing
-	// a panic: "runtime.AddCleanup: cleanup function closes over ptr".
-	// Instead, pass the OrtValue as the cleanup arg and capture only r.
-	v.cleanup = runtime.AddCleanup(v, func(p api.OrtValue) {
-		if p != 0 && r.apiFuncs != nil {
-			r.apiFuncs.ReleaseValue(p)
-		}
-	}, ptr)
+	// Clean up the native OrtValue when *Value is no longer reachable.
+	// Must not close over v (would prevent GC, panics on Go 1.24+).
+	v.cleanup = runtime.AddCleanup(v, r.releaseValuePtr, ptr)
 	return v
 }
 
@@ -57,6 +51,7 @@ func (v *Value) initTensorTypeAndShapeInfo() error {
 		return fmt.Errorf("failed to get tensor type and shape: %w", err)
 	}
 	v.infoPtr = infoPtr
+	v.infoCleanup = runtime.AddCleanup(v, v.runtime.releaseInfoPtr, infoPtr)
 	return nil
 }
 
@@ -147,21 +142,34 @@ func (v *Value) GetTensorElementCount() (int, error) {
 // recommended to ensure timely release of native memory, especially when
 // dealing with large tensors or high-frequency inference operations.
 func (v *Value) Close() {
-	v.cleanup.Stop() // prevent GC cleanup from double-freeing
+	v.cleanup.Stop()
+	v.infoCleanup.Stop()
 	v.releaseValue()
 	v.releaseInfo()
 }
 
+func (r *Runtime) releaseValuePtr(p api.OrtValue) {
+	if p != 0 && r.apiFuncs != nil {
+		r.apiFuncs.ReleaseValue(p)
+	}
+}
+
+func (r *Runtime) releaseInfoPtr(p api.OrtTensorTypeAndShapeInfo) {
+	if p != 0 && r.apiFuncs != nil {
+		r.apiFuncs.ReleaseTensorTypeAndShapeInfo(p)
+	}
+}
+
 func (v *Value) releaseValue() {
-	if v.ptr != 0 && v.runtime != nil && v.runtime.apiFuncs != nil {
-		v.runtime.apiFuncs.ReleaseValue(v.ptr)
+	if v.ptr != 0 && v.runtime != nil {
+		v.runtime.releaseValuePtr(v.ptr)
 		v.ptr = 0
 	}
 }
 
 func (v *Value) releaseInfo() {
-	if v.infoPtr != 0 && v.runtime != nil && v.runtime.apiFuncs != nil {
-		v.runtime.apiFuncs.ReleaseTensorTypeAndShapeInfo(v.infoPtr)
+	if v.infoPtr != 0 && v.runtime != nil {
+		v.runtime.releaseInfoPtr(v.infoPtr)
 		v.infoPtr = 0
 	}
 }

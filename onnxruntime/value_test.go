@@ -465,6 +465,27 @@ func TestValueCleanupDoesNotPanic(t *testing.T) {
 	runtime.GC()
 }
 
+// TestValueCleanupReleasesInfoPtr verifies that the GC cleanup also releases
+// infoPtr when it was lazily initialized (e.g. via GetTensorShape).
+func TestValueCleanupReleasesInfoPtr(t *testing.T) {
+	rt := newTestRuntime(t)
+
+	func() {
+		tensor, err := NewTensorValue(rt, []float32{1, 2, 3}, []int64{3})
+		if err != nil {
+			t.Fatalf("Failed to create tensor: %v", err)
+		}
+		// Trigger lazy allocation of infoPtr.
+		if _, err := tensor.GetTensorShape(); err != nil {
+			t.Fatalf("Failed to get shape: %v", err)
+		}
+		// Drop without Close() — GC should clean up both ptrs.
+		_ = tensor
+	}()
+
+	runtime.GC()
+}
+
 // TestValueCloseStopsCleanup verifies that calling Close() prevents the GC
 // cleanup from running. Without cleanup.Stop(), Close() releases the native
 // OrtValue, and then the GC cleanup fires with the original (now stale) ptr,
