@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/ebitengine/purego"
 	"github.com/shota3506/onnxruntime-purego/genai/internal/api"
 )
 
@@ -38,7 +37,7 @@ func NewRuntime(libraryPath string) (*Runtime, error) {
 		libraryPath = getDefaultLibraryName()
 	}
 
-	libraryHandle, err := purego.Dlopen(libraryPath, purego.RTLD_NOW|purego.RTLD_GLOBAL)
+	libraryHandle, err := loadLibrary(libraryPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load GenAI library: %w", err)
 	}
