@@ -6,7 +6,6 @@ import (
 	"slices"
 	"unsafe"
 
-	"github.com/ebitengine/purego"
 	"github.com/shota3506/onnxruntime-purego/internal/cstrings"
 	"github.com/shota3506/onnxruntime-purego/onnxruntime/internal/api"
 	v23 "github.com/shota3506/onnxruntime-purego/onnxruntime/internal/api/v23"
@@ -62,7 +61,7 @@ func NewRuntime(libraryPath string, apiVersion uint32) (*Runtime, error) {
 		libraryPath = getDefaultLibraryName()
 	}
 
-	libraryHandle, err := purego.Dlopen(libraryPath, purego.RTLD_NOW|purego.RTLD_GLOBAL)
+	libraryHandle, err := loadLibrary(libraryPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load library: %w", err)
 	}

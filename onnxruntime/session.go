@@ -1,6 +1,7 @@
 package onnxruntime
 
 import (
+	"runtime"
 	"context"
 	"errors"
 	"fmt"
@@ -56,10 +57,16 @@ func (r *Runtime) NewSession(env *Env, modelPath string, options *SessionOptions
 		}
 	}
 
-	modelPathBytes := append([]byte(modelPath), 0)
+	// The path encoding is platform-specific: ORTCHAR_T is wchar_t on
+	// Windows and char elsewhere. See modelPathArg.
+	modelPathPtr, keepPath, err := modelPathArg(modelPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode model path: %w", err)
+	}
 	var sessionPtr api.OrtSession
 
-	status := r.apiFuncs.CreateSession(env.ptr, &modelPathBytes[0], api.OrtSessionOptions(optsPtr), &sessionPtr)
+	status := r.apiFuncs.CreateSession(env.ptr, modelPathPtr, api.OrtSessionOptions(optsPtr), &sessionPtr)
+	runtime.KeepAlive(keepPath)
 	if err := r.statusError(status); err != nil {
 		return nil, fmt.Errorf("failed to create session: %w", err)
 	}
