@@ -25,6 +25,19 @@ type Value struct {
 	runtime *Runtime
 	cleanup     runtime.Cleanup // handle to cancel GC cleanup of OrtValue
 	infoCleanup runtime.Cleanup // handle to cancel GC cleanup of TensorTypeAndShapeInfo
+
+	// keep pins the Go slice a data-backed tensor references.
+	//
+	// CreateTensorWithDataAsOrtValue is the zero-copy variant: ONNX Runtime
+	// reads the caller's buffer directly for the tensor's whole lifetime.
+	// Without this reference, nothing keeps the slice alive once
+	// NewTensorValue returns — Go liveness ends at the last use — and under
+	// allocation pressure the GC collects the backing array while the native
+	// side still reads it. A single long-lived, reused tensor never hits
+	// this; a create-per-item loop does (observed as an ACCESS_VIOLATION
+	// after thousands of iterations, and it can equally corrupt results
+	// silently instead of crashing).
+	keep any
 }
 
 func (r *Runtime) newValueFromPtr(ptr api.OrtValue) *Value {
@@ -142,6 +155,7 @@ func (v *Value) GetTensorElementCount() (int, error) {
 // recommended to ensure timely release of native memory, especially when
 // dealing with large tensors or high-frequency inference operations.
 func (v *Value) Close() {
+	v.keep = nil // release the pinned tensor buffer, if any
 	v.cleanup.Stop()
 	v.infoCleanup.Stop()
 	v.releaseValue()
@@ -228,7 +242,14 @@ func NewTensorValue[T TensorData](r *Runtime, data []T, shape []int64) (*Value, 
 	dataPtr := unsafe.Pointer(&data[0])
 	dataLen := uintptr(len(data)) * elementSize
 
-	return r.newTensorValue(dataPtr, dataLen, shape, dataType)
+	v, err := r.newTensorValue(dataPtr, dataLen, shape, dataType)
+	if err != nil {
+		return nil, err
+	}
+	// The tensor references data's memory zero-copy; pin the slice to the
+	// Value so it lives as long as the tensor does.
+	v.keep = data
+	return v, nil
 }
 
 // newTensorValue creates a new tensor value from raw data using default CPU memory.
