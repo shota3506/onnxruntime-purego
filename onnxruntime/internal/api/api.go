@@ -54,6 +54,10 @@ type APIFuncs interface {
 
 	// Environment
 	CreateEnv(OrtLoggingLevel, *byte, *OrtEnv) OrtStatus
+	// CreateEnvWithCustomLogger takes the C function pointer of an
+	// OrtLoggingFunction and the opaque param it is called back with.
+	CreateEnvWithCustomLogger(loggingFunction uintptr, loggerParam uintptr, level OrtLoggingLevel, logID *byte, env *OrtEnv) OrtStatus
+	UpdateEnvWithCustomLogLevel(OrtEnv, OrtLoggingLevel) OrtStatus
 	ReleaseEnv(OrtEnv)
 
 	// Allocator

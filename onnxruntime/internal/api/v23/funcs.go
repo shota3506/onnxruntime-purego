@@ -17,8 +17,10 @@ type Funcs struct {
 	releaseStatus   func(api.OrtStatus)
 
 	// Environment
-	createEnv  func(api.OrtLoggingLevel, *byte, *api.OrtEnv) api.OrtStatus
-	releaseEnv func(api.OrtEnv)
+	createEnv                   func(api.OrtLoggingLevel, *byte, *api.OrtEnv) api.OrtStatus
+	createEnvWithCustomLogger   func(uintptr, uintptr, api.OrtLoggingLevel, *byte, *api.OrtEnv) api.OrtStatus
+	updateEnvWithCustomLogLevel func(api.OrtEnv, api.OrtLoggingLevel) api.OrtStatus
+	releaseEnv                  func(api.OrtEnv)
 
 	// Allocator
 	getAllocatorWithDefaultOptions func(*api.OrtAllocator) api.OrtStatus
@@ -93,6 +95,8 @@ func InitializeFuncs(libraryHandle uintptr) (*Funcs, error) {
 	purego.RegisterFunc(&funcs.releaseStatus, api.ReleaseStatus)
 
 	purego.RegisterFunc(&funcs.createEnv, api.CreateEnv)
+	purego.RegisterFunc(&funcs.createEnvWithCustomLogger, api.CreateEnvWithCustomLogger)
+	purego.RegisterFunc(&funcs.updateEnvWithCustomLogLevel, api.UpdateEnvWithCustomLogLevel)
 	purego.RegisterFunc(&funcs.releaseEnv, api.ReleaseEnv)
 
 	purego.RegisterFunc(&funcs.getAllocatorWithDefaultOptions, api.GetAllocatorWithDefaultOptions)
@@ -154,6 +158,14 @@ func (f *Funcs) ReleaseStatus(status api.OrtStatus) {
 
 func (f *Funcs) CreateEnv(logLevel api.OrtLoggingLevel, logID *byte, env *api.OrtEnv) api.OrtStatus {
 	return f.createEnv(logLevel, logID, env)
+}
+
+func (f *Funcs) CreateEnvWithCustomLogger(loggingFunction uintptr, loggerParam uintptr, logLevel api.OrtLoggingLevel, logID *byte, env *api.OrtEnv) api.OrtStatus {
+	return f.createEnvWithCustomLogger(loggingFunction, loggerParam, logLevel, logID, env)
+}
+
+func (f *Funcs) UpdateEnvWithCustomLogLevel(env api.OrtEnv, logLevel api.OrtLoggingLevel) api.OrtStatus {
+	return f.updateEnvWithCustomLogLevel(env, logLevel)
 }
 
 func (f *Funcs) ReleaseEnv(env api.OrtEnv) {
